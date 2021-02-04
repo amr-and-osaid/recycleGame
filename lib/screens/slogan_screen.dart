@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:ui';
 
 import 'package:cleanWise/app_data.dart';
-import 'package:cleanWise/screens/root_screen.dart';
+import 'package:cleanWise/screens/welcome_screen.dart';
 import 'package:flutter/material.dart';
 
 class SloganScreen extends StatefulWidget {
@@ -39,7 +39,7 @@ class _SloganScreenState extends State<SloganScreen> {
 
       Timer(Duration(seconds: 1, milliseconds: 300), () {
         Navigator.of(context).pushAndRemoveUntil(
-            MaterialPageRoute(builder: (context) => RootScreen()),
+            MaterialPageRoute(builder: (context) => WelcomeScreen()),
             (Route<dynamic> route) => false);
       });
     });

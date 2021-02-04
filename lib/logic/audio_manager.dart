@@ -37,14 +37,24 @@ class AudioManager {
         AudioPlayerState.PLAYING) _bgAudioPlayer.pause();
   }
 
+  void pause() {
+    if (_audioPlayer.state == AudioPlayerState.PLAYING) _audioPlayer.stop();
+  }
+
+  void pauseAll() {
+    pauseBg();
+    pause();
+  }
+
   void playDrag() => _play('audio/drag.mp3');
   void playWrong() => _play('audio/wrong.mp3');
   void playWin() => _play('audio/win.mp3');
   void playLose() => _play('audio/lose.mp3');
+  void playStar() => _play('audio/star.mp3');
   void playTrash(int id) => _play('audio/trash_$id.mp3');
 
   void _play(String file) {
-    if (_audioPlayer.state == AudioPlayerState.PLAYING) _audioPlayer.stop();
+    pause();
     if (AppData.soundOn) _audioCache.play(file);
   }
 }
