@@ -1,12 +1,13 @@
 import 'package:cleanWise/logic/game_level.dart';
-import 'package:cleanWise/screens/widgets/container_widget.dart';
-import 'package:cleanWise/screens/widgets/trash_widget.dart';
+import 'package:cleanWise/model/waste.dart';
+import 'package:cleanWise/screens/widgets/waste_bin_widget.dart';
+import 'package:cleanWise/screens/widgets/waste_widget.dart';
 import 'package:flutter/material.dart';
 
 class Type2GameWidget {
   final GameLevel game;
   final Function checkResult;
-  final List<int> trashIDs;
+  final List<Waste> wastes;
   final List<int> trashIDsDragged;
   final Function onDrag;
   final Function onDragCancelled;
@@ -17,7 +18,7 @@ class Type2GameWidget {
   Type2GameWidget(
       this.game,
       this.checkResult,
-      this.trashIDs,
+      this.wastes,
       this.trashIDsDragged,
       this.onDrag,
       this.onDragCancelled,
@@ -33,12 +34,21 @@ class Type2GameWidget {
             flex: 30,
             child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: game.containerIDs
-                    .map((e) => Flexible(
-                        flex: 30,
-                        fit: FlexFit.tight,
-                        child: ContainerWidget(e, checkResult)))
-                    .toList())),
+                children: game.wasteBins.length == 0
+                    ? [
+                        Opacity(
+                            opacity: 0,
+                            child: Image(
+                              image: AssetImage('assets/waste_bins/1.png'),
+                              fit: BoxFit.fitWidth,
+                            ))
+                      ]
+                    : game.wasteBins
+                        .map((e) => Flexible(
+                            flex: 30,
+                            fit: FlexFit.tight,
+                            child: WasteBinWidget(e, checkResult)))
+                        .toList())),
         Flexible(
             flex: 50,
             fit: FlexFit.tight,
@@ -52,15 +62,15 @@ class Type2GameWidget {
                       fit: BoxFit.fill),
                   Align(
                       alignment: Alignment(align, 0),
-                      child: trashIDs.length == 0
+                      child: wastes.length == 0
                           ? Center()
-                          : TrashWidget(
-                              trashIDs[0],
+                          : WasteWidget(
+                              wastes[0],
                               onDrag,
                               onDragCancelled,
                               state,
                               offset,
-                              (trashIDsDragged.contains(trashIDs[0])))),
+                              (trashIDsDragged.contains(wastes[0])))),
                 ],
               ),
             )),

@@ -51,7 +51,7 @@ class AudioManager {
   void playWin() => _play('audio/win.mp3');
   void playLose() => _play('audio/lose.mp3');
   void playStar() => _play('audio/star.mp3');
-  void playTrash(int id) => _play('audio/trash_$id.mp3');
+  void play(String audioPath) => _play(audioPath);
 
   void _play(String file) {
     pause();

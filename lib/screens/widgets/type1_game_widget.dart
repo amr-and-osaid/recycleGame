@@ -1,16 +1,17 @@
 import 'package:cleanWise/logic/game_level.dart';
-import 'package:cleanWise/screens/widgets/container_widget.dart';
-import 'package:cleanWise/screens/widgets/trash_widget.dart';
+import 'package:cleanWise/model/waste.dart';
+import 'package:cleanWise/screens/widgets/waste_bin_widget.dart';
+import 'package:cleanWise/screens/widgets/waste_widget.dart';
 import 'package:flutter/material.dart';
 
 class Type1GameWidget {
   final GameLevel game;
   final Function checkResult;
-  final List<int> trashIDs;
+  final List<Waste> wastes;
   final List<int> trashIDsDragged;
 
   Type1GameWidget(
-      this.game, this.checkResult, this.trashIDs, this.trashIDsDragged);
+      this.game, this.checkResult, this.wastes, this.trashIDsDragged);
 
   Widget getWidget() {
     return Column(
@@ -20,11 +21,11 @@ class Type1GameWidget {
             flex: 30,
             child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: game.containerIDs
+                children: game.wasteBins
                     .map((e) => Flexible(
                         flex: 30,
                         fit: FlexFit.tight,
-                        child: ContainerWidget(e, checkResult)))
+                        child: WasteBinWidget(e, checkResult)))
                     .toList())),
         Flexible(
             flex: 50,
@@ -35,7 +36,7 @@ class Type1GameWidget {
                   fit: FlexFit.loose,
                   child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
-                      children: trashIDs
+                      children: wastes
                           .map((e) => Flexible(
                               flex: 1,
                               child: Padding(
@@ -46,7 +47,7 @@ class Type1GameWidget {
                                         CircleAvatar(
                                             radius: 80,
                                             backgroundColor: Color(0xff644CA2)),
-                                        TrashWidget(
+                                        WasteWidget(
                                             e,
                                             null,
                                             null,

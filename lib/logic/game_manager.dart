@@ -12,32 +12,53 @@ class GameManager {
     currentLevel = _levels[_currentLevelID];
   }
 
-  void nextLevel() {
-    _currentLevelID++;
-    if (_currentLevelID >= _levels.length) _currentLevelID = 0;
+  void nextLevel(int curLevelID) {
+    if (curLevelID == _currentLevelID) {
+      _currentLevelID++;
+      if (_currentLevelID >= _levels.length) _currentLevelID = 0;
+      currentLevel = _levels[_currentLevelID];
+      _pref.setInt('currentLevelID', _currentLevelID);
+    }
+  }
+
+  void newGame() {
+    _currentLevelID = 0;
     currentLevel = _levels[_currentLevelID];
-    _pref.setInt('currentLevelID', _currentLevelID);
   }
 
   void resetCurrentLevel() => currentLevel.resetGame();
 
   bool get isLastLevel => _currentLevelID == _levels.length - 1;
 
+  int get currentLevelID => _currentLevelID;
+
+  GameLevel getLevel(int levelID) => _levels[levelID];
+
   List<GameLevel> _levels = [
-    GameLevel.basic(2, 8, 1, 6),
-    GameLevel.basic(2, 8, 1, 4),
-    GameLevel.basic(2, 8, 1, 2),
-    GameLevel.basic(3, 8, 1, 2),
-    GameLevel.basic(4, 8, 1, 2),
-    GameLevel.timed(2, 1, 4, 30),
-    GameLevel.timed(2, 1, 6, 25),
-    GameLevel.timed(2, 1, 8, 20),
-    GameLevel.timed(2, 1, 10, 15),
-    GameLevel.timed(2, 1, 10, 10),
-    GameLevel.moving(2, 8, 1, 6, 15),
-    GameLevel.moving(2, 8, 1, 4, 10),
-    GameLevel.moving(2, 8, 1, 3, 5),
-    GameLevel.moving(2, 8, 1, 2, 2),
-    GameLevel.moving(2, 8, 1, 2, 1),
+    GameLevel.moving(2, 8, 2, 6000),
+    GameLevel.moving(2, 8, 4, 5000),
+    GameLevel.moving(2, 8, 5, 4000),
+    //
+    GameLevel.basic(2, 8, 2),
+    GameLevel.basic(2, 8, 4),
+    //
+    GameLevel.moving(2, 8, 5, 4000),
+    GameLevel.moving(2, 8, 6, 3000),
+    //
+    GameLevel.timed(2, 4, 30),
+    GameLevel.timed(2, 6, 30),
+    //
+    GameLevel.moving(2, 8, 6, 3000),
+    //
+    GameLevel.timed(2, 8, 30),
+    GameLevel.timed(2, 10, 30),
+    //
+    GameLevel.basic(2, 8, 6),
+    GameLevel.basic(3, 8, 6),
+    GameLevel.basic(4, 8, 6),
+    //
+    GameLevel.timed(2, 12, 30),
+    GameLevel.moving(3, 8, 6, 2000),
+    GameLevel.moving(4, 8, 6, 1000),
   ];
 }

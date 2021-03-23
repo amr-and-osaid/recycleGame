@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:cleanWise/logic/audio_manager.dart';
+import 'package:cleanWise/screens/map_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:cleanWise/screens/game_screen.dart';
 import 'package:cleanWise/app_data.dart';
@@ -95,9 +96,19 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                         fit: FlexFit.tight,
                         child: Padding(
                           padding: const EdgeInsets.all(8.0),
-                          child: Image(
-                              image: AssetImage('assets/welcome/new_game.png'),
-                              fit: BoxFit.contain),
+                          child: GestureDetector(
+                            onTap: () {
+                              AppData.gameManager.newGame();
+                              Navigator.of(context).pushAndRemoveUntil(
+                                  MaterialPageRoute(
+                                      builder: (context) => MapScreen()),
+                                  (Route<dynamic> route) => false);
+                            },
+                            child: Image(
+                                image:
+                                    AssetImage('assets/welcome/new_game.png'),
+                                fit: BoxFit.contain),
+                          ),
                         ),
                       ),
                       Flexible(
@@ -109,7 +120,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                             onTap: () => Navigator.of(context)
                                 .pushAndRemoveUntil(
                                     MaterialPageRoute(
-                                        builder: (context) => GameScreen()),
+                                        builder: (context) => MapScreen()),
                                     (Route<dynamic> route) => false),
                             child: Image(
                                 image:

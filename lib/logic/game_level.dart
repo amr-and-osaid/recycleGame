@@ -1,5 +1,7 @@
 import 'dart:math';
 import 'package:cleanWise/logic/trash_container_map.dart';
+import 'package:cleanWise/model/waste.dart';
+import 'package:cleanWise/model/waste_bin.dart';
 
 enum LevelType { BASIC, TIMED, MOVING }
 
@@ -12,29 +14,32 @@ class GameLevel {
   int maxMistakesAllowed = 1;
   int targetScore = 0;
   int durationinSec = 0;
-  int movingSpeed;
+  int movingDuration;
+  int conseqtiveMistakes = 0;
+  int conseqtiveCorrects = 0;
+  bool lastWasCorrect;
 
-  GameLevel.basic(this.nContainers, this.nTotalTrash, this.nTrashAtOnce,
-      this.maxMistakesAllowed) {
+  GameLevel.basic(this.nContainers, this.nTotalTrash, this.targetScore) {
     type = LevelType.BASIC;
+    maxMistakesAllowed = nTotalTrash - targetScore;
     _refreshTrashList();
   }
 
-  GameLevel.moving(this.nContainers, this.nTotalTrash, this.nTrashAtOnce,
-      this.maxMistakesAllowed, this.movingSpeed) {
+  GameLevel.moving(this.nContainers, this.nTotalTrash, this.targetScore,
+      this.movingDuration) {
     type = LevelType.MOVING;
+    maxMistakesAllowed = nTotalTrash - targetScore;
     _refreshTrashList();
   }
 
-  GameLevel.timed(this.nContainers, this.nTrashAtOnce, this.targetScore,
-      this.durationinSec) {
+  GameLevel.timed(this.nContainers, this.targetScore, this.durationinSec) {
     type = LevelType.TIMED;
     _refreshTrashList();
   }
 
   //local members
-  List<int> _trashIDs = [];
-  List<int> _containerIDs = [];
+  List<Waste> _wastes = [];
+  List<WasteBin> _wasteBins = [];
   int _scoreCounter = 0;
   int _mistakesCounter = 0;
 
@@ -71,8 +76,8 @@ class GameLevel {
         ".png";
   }
 
-  List<int> get trashIDs => _trashIDs;
-  List<int> get containerIDs => _containerIDs;
+  List<Waste> get wastes => _wastes;
+  List<WasteBin> get wasteBins => _wasteBins;
   int get mistakesCounter => _mistakesCounter;
   int get scoreCounter => _scoreCounter;
   bool get winLevelReached {
@@ -112,18 +117,32 @@ class GameLevel {
         _mistakesCounter = nTotalTrash - _scoreCounter;
     }
 
+    if (lastWasCorrect != null) {
+      if (lastWasCorrect && !correct) conseqtiveCorrects = 0;
+      if (!lastWasCorrect && correct) conseqtiveMistakes = 0;
+    }
+    lastWasCorrect = correct;
+
+    if (correct)
+      conseqtiveCorrects++;
+    else
+      conseqtiveMistakes++;
+
     _refreshTrashList();
   }
 
   void resetGame() {
     _scoreCounter = 0;
     _mistakesCounter = 0;
+    conseqtiveCorrects = 0;
+    conseqtiveMistakes = 0;
+    lastWasCorrect = null;
     _refreshTrashList();
   }
 
   void _refreshTrashList() {
-    _trashIDs.clear();
-    _containerIDs.clear();
+    _wastes.clear();
+    _wasteBins.clear();
 
     if (isEndOfGame) return;
 
@@ -138,7 +157,9 @@ class GameLevel {
       containers.putIfAbsent(TrashContainerMap.map[rand], () => null);
     }
 
-    _trashIDs = trashs.keys.map((e) => e).toList();
+    _wastes = trashs.keys
+        .map((e) => Waste.wastes.firstWhere((element) => element.wasteID == e))
+        .toList();
 
     int remaining = nContainers - containers.keys.length;
     for (int i = 0; i < remaining; i++) {
@@ -147,7 +168,10 @@ class GameLevel {
       containers.putIfAbsent(rand, () => null);
     }
 
-    _containerIDs = containers.keys.map((e) => e).toList();
-    _containerIDs.shuffle();
+    _wasteBins = containers.keys
+        .map((e) =>
+            WasteBin.wasteBins.firstWhere((element) => element.wasteBinID == e))
+        .toList();
+    _wasteBins.shuffle();
   }
 }

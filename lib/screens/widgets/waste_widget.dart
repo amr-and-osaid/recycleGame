@@ -1,27 +1,28 @@
+import 'package:cleanWise/model/waste.dart';
 import 'package:flutter/material.dart';
 import 'package:cleanWise/app_data.dart';
 
 enum EntranceState { ENTER, EXIT, NONE }
 
-class TrashWidget extends StatefulWidget {
-  final int imageID;
+class WasteWidget extends StatefulWidget {
+  final Waste waste;
   final Function onDrag;
   final Function onDragCancelled;
   final EntranceState state;
   final double offset;
   final bool dragged;
-  final _TrashWidgetState localState = _TrashWidgetState();
+  final _WasteWidgetState localState = _WasteWidgetState();
 
-  TrashWidget(this.imageID, this.onDrag, this.onDragCancelled, this.state,
+  WasteWidget(this.waste, this.onDrag, this.onDragCancelled, this.state,
       this.offset, this.dragged,
       {Key key})
       : super(key: key);
 
   @override
-  _TrashWidgetState createState() => localState;
+  _WasteWidgetState createState() => localState;
 }
 
-class _TrashWidgetState extends State<TrashWidget> {
+class _WasteWidgetState extends State<WasteWidget> {
   bool draggedToTarget = false;
 
   Widget get baseWidget => Container(
@@ -37,10 +38,8 @@ class _TrashWidgetState extends State<TrashWidget> {
               widthFactor:
                   widget.state == EntranceState.NONE ? 1 : widget.offset,
               child: Image(
-                  image: AssetImage(
-                      'assets/trash/' + widget.imageID.toString() + '.png'),
+                  image: AssetImage(widget.waste.imagePath),
                   width: 150,
-                  // fit: BoxFit.fill,
                   height: 150),
             ),
           ),
@@ -53,8 +52,7 @@ class _TrashWidgetState extends State<TrashWidget> {
         child: Align(
           alignment: Alignment(0, -1),
           child: Image(
-              image: AssetImage(
-                  'assets/trash/' + widget.imageID.toString() + '.png'),
+              image: AssetImage(widget.waste.imagePath),
               width: 100,
               height: 100),
         ),
@@ -65,8 +63,8 @@ class _TrashWidgetState extends State<TrashWidget> {
     return Stack(
       alignment: Alignment.center,
       children: [
-        Draggable<int>(
-          data: widget.imageID,
+        Draggable<Waste>(
+          data: widget.waste,
           childWhenDragging: Center(),
           feedback: feedbackWidget,
           // feedbackOffset: Offset(0, 5),

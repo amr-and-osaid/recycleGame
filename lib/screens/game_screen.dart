@@ -1,18 +1,21 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:cleanWise/app_data.dart';
 import 'package:cleanWise/logic/game_level.dart';
+import 'package:cleanWise/model/waste.dart';
 import 'package:cleanWise/screens/finish_screen.dart';
 import 'package:cleanWise/screens/welcome_screen.dart';
 import 'package:cleanWise/screens/widgets/controls_widget.dart';
 import 'package:cleanWise/screens/widgets/type1_game_widget.dart';
 import 'package:cleanWise/screens/widgets/type2_game_widget.dart';
-import 'package:cleanWise/screens/widgets/trash_widget.dart';
+import 'package:cleanWise/screens/widgets/waste_widget.dart';
 import 'package:cleanWise/screens/widgets/progress_widget.dart';
 import 'package:flutter/material.dart';
 
 class GameScreen extends StatefulWidget {
-  GameScreen({Key key}) : super(key: key);
+  final int levelID;
+  GameScreen(this.levelID, {Key key}) : super(key: key);
 
   @override
   _GameScreenState createState() => _GameScreenState();
@@ -24,16 +27,19 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
   Timer _gameTimer;
   int trashFinished = 0;
   int correctResult = 0;
-  List<int> trashIDs = [];
-  List<int> trashIDsDragged = [];
+  List<Waste> wastes = [];
+  List<int> wastesDragged = [];
   int _curSec = 0;
 
   //for game type MOVING
   Timer _movingTimer;
+  Timer _feedbackTimer;
   double _align = 1;
   double _offset = 0.1;
   EntranceState _state = EntranceState.ENTER;
   bool _pauseTimer = false;
+  double _feedbackOffset = 0;
+  String _girlImage = 'assets/side_girl/good_1.png';
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
@@ -57,8 +63,9 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    game = AppData.gameManager.currentLevel;
-    trashIDs = game.trashIDs;
+    game = AppData.gameManager.getLevel(widget.levelID);
+    wastes = game.wastes;
+
     if (game.type == LevelType.TIMED) {
       _gameTimer = Timer.periodic(Duration(seconds: 1), (timer) {
         setState(() {
@@ -69,14 +76,15 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
           _gameTimer.cancel();
           bool win = game.isWin;
           Navigator.of(context).pushAndRemoveUntil(
-              MaterialPageRoute(builder: (context) => FinishScreen(win)),
+              MaterialPageRoute(
+                  builder: (context) => FinishScreen(widget.levelID, win)),
               (Route<dynamic> route) => false);
           game.resetGame();
         }
       });
     } else if (game.type == LevelType.MOVING) {
-      _movingTimer =
-          Timer.periodic(Duration(milliseconds: game.movingSpeed), (timer) {
+      _movingTimer = Timer.periodic(
+          Duration(milliseconds: (game.movingDuration / 400).floor()), (timer) {
         if (_pauseTimer) return;
         setState(() {
           if (_state == EntranceState.ENTER) {
@@ -96,7 +104,7 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
               _state = EntranceState.ENTER;
               _offset = 0.01;
               _align = 1;
-              _checkResults(trashIDs.length > 0 ? trashIDs[0] : 0, false);
+              _checkResults(wastes.length > 0 ? wastes[0] : 0, false);
             }
           }
         });
@@ -113,6 +121,38 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
 
   void updateMe() => setState(() {});
 
+  void showFeedback(bool good) {
+    if (_feedbackTimer == null) {
+      int rand = Random().nextInt(4) + 1;
+      _girlImage =
+          'assets/side_girl/' + (good ? 'good_$rand' : 'bad_$rand') + '.png';
+      _feedbackTimer = Timer.periodic(Duration(milliseconds: 2), (timer) {
+        if (_pauseTimer) return;
+        setState(() {
+          _feedbackOffset += 0.01;
+          if (_feedbackOffset >= 1) {
+            _feedbackOffset = 1;
+            _feedbackTimer.cancel();
+            Timer(Duration(milliseconds: 500), () {
+              _feedbackTimer =
+                  Timer.periodic(Duration(milliseconds: 2), (timer) {
+                if (_pauseTimer) return;
+                setState(() {
+                  _feedbackOffset -= 0.01;
+                  if (_feedbackOffset <= 0) {
+                    _feedbackOffset = 0;
+                    _feedbackTimer.cancel();
+                    _feedbackTimer = null;
+                  }
+                });
+              });
+            });
+          }
+        });
+      });
+    }
+  }
+
   void exit() {
     setState(() {
       _showCloseConfirm = true;
@@ -120,15 +160,15 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
   }
 
   void onDrag() {
-    setState(() {
-      _pauseTimer = true;
-    });
+    // setState(() {
+    //   _pauseTimer = true;
+    // });
   }
 
   void onDragCancelled() {
-    setState(() {
-      _pauseTimer = false;
-    });
+    // setState(() {
+    //   _pauseTimer = false;
+    // });
   }
 
   void _checkResults(int trashID, bool correct) {
@@ -136,13 +176,20 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
     if (correct) correctResult++;
 
     setState(() {
-      trashIDsDragged.add(trashID);
+      wastesDragged.add(trashID);
     });
 
     if (trashFinished < game.nTrashAtOnce) return;
 
     setState(() {
       game.setProgressAndGoNext(correctResult >= game.nTrashAtOnce);
+      if (game.conseqtiveMistakes == 2 && !game.isEndOfGame) {
+        showFeedback(false);
+        game.conseqtiveMistakes = 0;
+      } else if (game.conseqtiveCorrects == 5 && !game.isEndOfGame) {
+        showFeedback(true);
+        game.conseqtiveCorrects = 0;
+      }
       _pauseTimer = false;
       _state = EntranceState.ENTER;
       _offset = 0.1;
@@ -151,15 +198,16 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
 
     trashFinished = 0;
     correctResult = 0;
-    trashIDsDragged.clear();
-    trashIDs = game.trashIDs;
+    wastesDragged.clear();
+    wastes = game.wastes;
 
     if (game.isEndOfGame) {
       if (_gameTimer != null) _gameTimer.cancel();
       Timer(Duration(milliseconds: 500), () {
         bool win = game.isWin;
         Navigator.of(context).pushAndRemoveUntil(
-            MaterialPageRoute(builder: (context) => FinishScreen(win)),
+            MaterialPageRoute(
+                builder: (context) => FinishScreen(widget.levelID, win)),
             (Route<dynamic> route) => false);
         game.resetGame();
       });
@@ -192,8 +240,8 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
                     ? Type2GameWidget(
                             game,
                             _checkResults,
-                            trashIDs,
-                            trashIDsDragged,
+                            wastes,
+                            wastesDragged,
                             onDrag,
                             onDragCancelled,
                             _align,
@@ -201,9 +249,10 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
                             _state)
                         .getWidget()
                     : Type1GameWidget(
-                            game, _checkResults, trashIDs, trashIDsDragged)
+                            game, _checkResults, wastes, wastesDragged)
                         .getWidget()),
           ]),
+          // _feedbackOffset > 0 ? Container(color: Colors.transparent) : Center(),
           ..._showCloseConfirm
               ? [
                   Opacity(opacity: 0.6, child: Container(color: Colors.black)),
@@ -222,7 +271,28 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
                                 AssetImage('assets/controls/close_confirm.png'),
                           )))
                 ]
-              : [Center()]
+              : [Center()],
+          _feedbackOffset == 0
+              ? Center()
+              : Align(
+                  alignment: Alignment.centerLeft,
+                  child: Container(
+                    height: 200,
+                    child: ClipRect(
+                      child: Container(
+                        child: Align(
+                          alignment: Alignment.centerRight,
+                          widthFactor: _feedbackOffset,
+                          child: Image(
+                            image: AssetImage(_girlImage),
+                            // width: 150,
+                            fit: BoxFit.fill,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                )
         ])));
   }
 }

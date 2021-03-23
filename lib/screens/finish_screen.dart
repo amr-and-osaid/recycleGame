@@ -1,11 +1,13 @@
 import 'package:cleanWise/app_data.dart';
 import 'package:cleanWise/screens/game_screen.dart';
+import 'package:cleanWise/screens/map_screen.dart';
 import 'package:cleanWise/screens/welcome_screen.dart';
 import 'package:flutter/material.dart';
 
 class FinishScreen extends StatefulWidget {
+  final int levelID;
   final bool win;
-  FinishScreen(this.win, {Key key}) : super(key: key);
+  FinishScreen(this.levelID, this.win, {Key key}) : super(key: key);
 
   @override
   _FinishScreenState createState() => _FinishScreenState();
@@ -46,7 +48,7 @@ class _FinishScreenState extends State<FinishScreen>
     else
       AppData.audioManager.playLose();
 
-    if (widget.win) AppData.gameManager.nextLevel();
+    if (widget.win) AppData.gameManager.nextLevel(widget.levelID);
   }
 
   @override
@@ -91,11 +93,15 @@ class _FinishScreenState extends State<FinishScreen>
                           MaterialPageRoute(
                               builder: (context) => WelcomeScreen()),
                           (Route<dynamic> route) => false);
-                    else {
+                    else if (widget.win) {
                       Navigator.of(context).pushAndRemoveUntil(
-                          MaterialPageRoute(builder: (context) => GameScreen()),
+                          MaterialPageRoute(builder: (context) => MapScreen()),
                           (Route<dynamic> route) => false);
-                    }
+                    } else
+                      Navigator.of(context).pushAndRemoveUntil(
+                          MaterialPageRoute(
+                              builder: (context) => GameScreen(widget.levelID)),
+                          (Route<dynamic> route) => false);
                   },
                   child: Image(
                       image: AssetImage('assets/finish_screen/button_' +
