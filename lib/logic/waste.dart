@@ -1,13 +1,16 @@
-import 'package:cleanWise/model/waste_bin.dart';
+import 'package:recycle_game/logic/waste_bin.dart';
 
 class Waste {
   int wasteID;
   WasteBin wasteBin;
   String imagePath;
+  int outIndex;
 
   Waste(this.wasteID, this.wasteBin) {
-    imagePath = 'assets/wastes/' + wasteID.toString() + '.png';
+    imagePath = 'assets/wastes/$wasteID.png';
   }
+
+  Waste clone() => Waste(wasteID, wasteBin);
 
   static List<Waste> wastes = [
     Waste(1, WasteBin.glass),

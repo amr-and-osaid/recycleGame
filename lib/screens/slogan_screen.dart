@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'dart:ui';
 
-import 'package:cleanWise/app_data.dart';
-import 'package:cleanWise/screens/welcome_screen.dart';
+import 'package:recycle_game/app_data.dart';
+import 'package:recycle_game/screens/welcome_screen.dart';
 import 'package:flutter/material.dart';
 
 class SloganScreen extends StatefulWidget {

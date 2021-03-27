@@ -1,5 +1,5 @@
-import 'package:cleanWise/app_data.dart';
-import 'package:cleanWise/screens/slogan_screen.dart';
+import 'package:recycle_game/app_data.dart';
+import 'package:recycle_game/screens/slogan_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:package_info/package_info.dart';

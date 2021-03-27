@@ -1,4 +1,4 @@
-# cleanWise
+# recycle_game
 
 A new Flutter project.
 

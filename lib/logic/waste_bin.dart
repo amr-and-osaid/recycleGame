@@ -15,7 +15,7 @@ class WasteBin {
   static WasteBin paper = WasteBin(5);
   static WasteBin plastic = WasteBin(6);
 
-  static List<WasteBin> wasteBins = [
+  static List<WasteBin> bins = [
     electiric,
     glass,
     metal,

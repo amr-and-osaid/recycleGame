@@ -1,6 +1,6 @@
 import 'package:audioplayers/audio_cache.dart';
 import 'package:audioplayers/audioplayers.dart';
-import 'package:cleanWise/app_data.dart';
+import 'package:recycle_game/app_data.dart';
 
 class AudioManager {
   static AudioCache _audioCache;

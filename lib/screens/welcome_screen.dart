@@ -1,10 +1,8 @@
 import 'dart:async';
 
-import 'package:cleanWise/logic/audio_manager.dart';
-import 'package:cleanWise/screens/map_screen.dart';
+import 'package:recycle_game/screens/game_areas_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:cleanWise/screens/game_screen.dart';
-import 'package:cleanWise/app_data.dart';
+import 'package:recycle_game/app_data.dart';
 
 class WelcomeScreen extends StatefulWidget {
   WelcomeScreen({Key key}) : super(key: key);
@@ -22,22 +20,8 @@ class _WelcomeScreenState extends State<WelcomeScreen>
   bool _starRepeat = false;
 
   @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    switch (state) {
-      case AppLifecycleState.resumed:
-        AppData.audioManager.playBgLoop();
-        break;
-      case AppLifecycleState.inactive:
-        AppData.audioManager.pauseAll();
-        break;
-      case AppLifecycleState.paused:
-        AppData.audioManager.pauseAll();
-        break;
-      case AppLifecycleState.detached:
-        AppData.audioManager.pauseAll();
-        break;
-    }
-  }
+  void didChangeAppLifecycleState(AppLifecycleState state) =>
+      AppData.cycleState(state);
 
   @override
   void initState() {
@@ -72,6 +56,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     if (_timer != null) _timer.cancel();
     super.dispose();
   }
@@ -101,7 +86,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                               AppData.gameManager.newGame();
                               Navigator.of(context).pushAndRemoveUntil(
                                   MaterialPageRoute(
-                                      builder: (context) => MapScreen()),
+                                      builder: (context) => GameAreasScreen()),
                                   (Route<dynamic> route) => false);
                             },
                             child: Image(
@@ -120,7 +105,8 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                             onTap: () => Navigator.of(context)
                                 .pushAndRemoveUntil(
                                     MaterialPageRoute(
-                                        builder: (context) => MapScreen()),
+                                        builder: (context) =>
+                                            GameAreasScreen()),
                                     (Route<dynamic> route) => false),
                             child: Image(
                                 image:

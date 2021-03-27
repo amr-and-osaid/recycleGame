@@ -1,4 +1,4 @@
-name: cleanWise
+name: recycle_game
 description: A new Flutter project.
 
 # The following line prevents the package from being accidentally published to
@@ -15,7 +15,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # In iOS, build-name is used as CFBundleShortVersionString while build-number used as CFBundleVersion.
 # Read more about iOS versioning at
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
-version: 1.0.0-beta17+1
+version: 1.0.0-beta18+1
 
 environment:
   sdk: ">=2.7.0 <3.0.0"
@@ -66,7 +66,7 @@ flutter:
     - assets/welcome/
     - assets/side_girl/
     - assets/finish_screen/
-    - assets/maps/
+    - assets/areas/
     - assets/audio/
 
   # An image asset can refer to one or more resolution-specific "variants", see

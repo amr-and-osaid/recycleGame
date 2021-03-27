@@ -1,177 +1,152 @@
+import 'dart:async';
 import 'dart:math';
-import 'package:cleanWise/logic/trash_container_map.dart';
-import 'package:cleanWise/model/waste.dart';
-import 'package:cleanWise/model/waste_bin.dart';
+import 'package:recycle_game/logic/waste.dart';
+import 'package:recycle_game/logic/waste_bin.dart';
 
-enum LevelType { BASIC, TIMED, MOVING }
+enum LevelType { BASIC, BELT, WATERFALL, RAIN, COLLECTION }
 
 class GameLevel {
-  //Game Parameters
-  LevelType type = LevelType.BASIC;
-  int nContainers = 2;
-  int nTrashAtOnce = 1;
-  int nTotalTrash = 1;
-  int maxMistakesAllowed = 1;
-  int targetScore = 0;
-  int durationinSec = 0;
+  //Level Params
+  LevelType type;
+  int numBins;
+  int numWastes;
+  int numTargetWastes;
+  int levelDuration;
   int movingDuration;
-  int conseqtiveMistakes = 0;
-  int conseqtiveCorrects = 0;
-  bool lastWasCorrect;
+  double xLocInMap;
+  double yLocInMap;
+  String bgPath;
 
-  GameLevel.basic(this.nContainers, this.nTotalTrash, this.targetScore) {
-    type = LevelType.BASIC;
-    maxMistakesAllowed = nTotalTrash - targetScore;
-    _refreshTrashList();
+  //Level State
+  int levelScore;
+  bool levelSucceeded;
+  int remDuration;
+  List<WasteBin> bins = [];
+  int consecutiveMistakesCounter = 0;
+  int consecutiveCorrectsCounter = 0;
+
+  //locals
+  Timer _levelTimer;
+  bool _lastCorrectState;
+
+  GameLevel(this.type, this.numBins, this.numWastes, this.numTargetWastes,
+      this.levelDuration, this.movingDuration, this.xLocInMap, this.yLocInMap) {
+    prepareLevel();
+    bgPath = 'assets/areas/11.png';
   }
 
-  GameLevel.moving(this.nContainers, this.nTotalTrash, this.targetScore,
-      this.movingDuration) {
-    type = LevelType.MOVING;
-    maxMistakesAllowed = nTotalTrash - targetScore;
-    _refreshTrashList();
+  void prepareLevel() {
+    levelScore = 0;
+    levelSucceeded = false;
+    remDuration = levelDuration;
+    consecutiveCorrectsCounter = 0;
+    consecutiveMistakesCounter = 0;
+    _lastCorrectState = null;
+    bins.clear();
+    for (int i = 0; i < numBins; i++) {
+      WasteBin randomBin =
+          WasteBin.bins[Random().nextInt(WasteBin.bins.length)];
+      while (bins.contains(randomBin))
+        randomBin = WasteBin.bins[Random().nextInt(WasteBin.bins.length)];
+
+      bins.add(randomBin);
+    }
   }
 
-  GameLevel.timed(this.nContainers, this.targetScore, this.durationinSec) {
-    type = LevelType.TIMED;
-    _refreshTrashList();
+  void startLevel() {
+    _levelTimer = Timer.periodic(Duration(seconds: 1), (timer) {
+      remDuration--;
+      if (remDuration <= 0) {
+        levelSucceeded = levelScore >= numTargetWastes;
+        _levelTimer.cancel();
+      }
+    });
   }
 
-  //local members
-  List<Waste> _wastes = [];
-  List<WasteBin> _wasteBins = [];
-  int _scoreCounter = 0;
-  int _mistakesCounter = 0;
+  void setScore(bool isCorrect) {
+    if (isCorrect)
+      levelScore++;
+    else {
+      remDuration -= 5;
+      if (remDuration < 0) remDuration = 0;
+    }
+
+    if (_lastCorrectState != null) {
+      if (_lastCorrectState && !isCorrect) consecutiveCorrectsCounter = 0;
+      if (!_lastCorrectState && isCorrect) consecutiveMistakesCounter = 0;
+    }
+    _lastCorrectState = isCorrect;
+
+    if (isCorrect)
+      consecutiveCorrectsCounter++;
+    else
+      consecutiveMistakesCounter++;
+  }
+
+  Waste nextWaste() {
+    if (numWastes <= 0 || numBins <= 0 || bins.length <= 0) return null;
+
+    WasteBin randomBin = bins[Random().nextInt(bins.length)];
+    List<Waste> randomWastes = Waste.wastes
+        .where((e) => e.wasteBin.wasteBinID == randomBin.wasteBinID)
+        .toList();
+
+    if (randomWastes.length <= 0) return null;
+    return randomWastes[Random().nextInt(randomWastes.length)];
+  }
 
   // Game State
 
-  String get scoreImage {
-    return "assets/progress/LS" +
-        ((_scoreCounter.toDouble() /
-                    (type == LevelType.BASIC || type == LevelType.MOVING
-                        ? (nTotalTrash - maxMistakesAllowed)
-                        : targetScore)) *
-                33)
-            .floor()
-            .clamp(0, 33)
-            .toString() +
-        ".png";
-  }
+  // String get scoreImage {
+  //   return "assets/progress/LS" +
+  //       ((_scoreCounter.toDouble() /
+  //                   (type == LevelType.BASIC || type == LevelType.MOVING
+  //                       ? (numRounds - maxMistakesAllowed)
+  //                       : numTargetWastes)) *
+  //               33)
+  //           .floor()
+  //           .clamp(0, 33)
+  //           .toString() +
+  //       ".png";
+  // }
 
-  double get maxMiskatesAllowedAlignValue {
-    return ((1 - (maxMistakesAllowed / nTotalTrash)) * 2) - 1;
-  }
+  // double get maxMiskatesAllowedAlignValue {
+  //   return ((1 - (maxMistakesAllowed / numRounds)) * 2) - 1;
+  // }
 
-  String timerImage(int curSec) {
-    return "assets/timer/" +
-        (((curSec.toDouble() / durationinSec) * 23).floor()).toString() +
-        ".png";
-  }
+  // String timerImage(int curSec) {
+  //   return "assets/timer/" +
+  //       (((curSec.toDouble() / levelDuration) * 23).floor()).toString() +
+  //       ".png";
+  // }
 
-  String get mistakesImage {
-    return "assets/progress/LS" +
-        (((_mistakesCounter).toDouble() / maxMistakesAllowed) * 33)
-            .floor()
-            .toString() +
-        ".png";
-  }
+  // String get mistakesImage {
+  //   return "assets/progress/LS" +
+  //       (((_mistakesCounter).toDouble() / maxMistakesAllowed) * 33)
+  //           .floor()
+  //           .toString() +
+  //       ".png";
+  // }
 
-  List<Waste> get wastes => _wastes;
-  List<WasteBin> get wasteBins => _wasteBins;
-  int get mistakesCounter => _mistakesCounter;
-  int get scoreCounter => _scoreCounter;
-  bool get winLevelReached {
-    return _scoreCounter >=
-        (type == LevelType.BASIC || type == LevelType.MOVING
-            ? (nTotalTrash - maxMistakesAllowed)
-            : targetScore);
-  }
+  // bool get winLevelReached {
+  //   return levelScore >=
+  //       (type == LevelType.BASIC || type == LevelType.MOVING
+  //           ? (numRounds - maxMistakesAllowed)
+  //           : numTargetWastes);
+  // }
 
-  bool get isWin {
-    return (type == LevelType.BASIC || type == LevelType.MOVING
-            ? (_mistakesCounter >= maxMistakesAllowed)
-            : _scoreCounter < targetScore)
-        ? false
-        : true;
-  }
+  // bool get isWin {
+  //   return (type == LevelType.BASIC || type == LevelType.MOVING
+  //           ? (_mistakesCounter >= maxMistakesAllowed)
+  //           : levelScore < numTargetWastes)
+  //       ? false
+  //       : true;
+  // }
 
-  bool get isEndOfGame => (type == LevelType.BASIC || type == LevelType.MOVING
-          ? (_mistakesCounter >= maxMistakesAllowed ||
-              _scoreCounter >= (nTotalTrash - maxMistakesAllowed))
-          : _scoreCounter >= targetScore)
-      ? true
-      : false;
-
-  // Game Controls
-  void setProgressAndGoNext(bool correct) {
-    // Update progress
-    if (correct) {
-      _scoreCounter++;
-      if ((type == LevelType.BASIC || type == LevelType.MOVING) &&
-          _scoreCounter + _mistakesCounter > nTotalTrash)
-        _scoreCounter = nTotalTrash - _mistakesCounter;
-    } else {
-      _mistakesCounter++;
-      if ((type == LevelType.BASIC || type == LevelType.MOVING) &&
-          _scoreCounter + _mistakesCounter > nTotalTrash)
-        _mistakesCounter = nTotalTrash - _scoreCounter;
-    }
-
-    if (lastWasCorrect != null) {
-      if (lastWasCorrect && !correct) conseqtiveCorrects = 0;
-      if (!lastWasCorrect && correct) conseqtiveMistakes = 0;
-    }
-    lastWasCorrect = correct;
-
-    if (correct)
-      conseqtiveCorrects++;
-    else
-      conseqtiveMistakes++;
-
-    _refreshTrashList();
-  }
-
-  void resetGame() {
-    _scoreCounter = 0;
-    _mistakesCounter = 0;
-    conseqtiveCorrects = 0;
-    conseqtiveMistakes = 0;
-    lastWasCorrect = null;
-    _refreshTrashList();
-  }
-
-  void _refreshTrashList() {
-    _wastes.clear();
-    _wasteBins.clear();
-
-    if (isEndOfGame) return;
-
-    Map<int, int> containers = Map<int, int>();
-    Map<int, int> trashs = Map<int, int>();
-
-    for (int i = 0; i < nTrashAtOnce; i++) {
-      int rand = Random().nextInt(TrashContainerMap.map.keys.length) + 1;
-      while (trashs.keys.contains(rand))
-        rand = Random().nextInt(TrashContainerMap.map.keys.length) + 1;
-      trashs.putIfAbsent(rand, () => null);
-      containers.putIfAbsent(TrashContainerMap.map[rand], () => null);
-    }
-
-    _wastes = trashs.keys
-        .map((e) => Waste.wastes.firstWhere((element) => element.wasteID == e))
-        .toList();
-
-    int remaining = nContainers - containers.keys.length;
-    for (int i = 0; i < remaining; i++) {
-      int rand = Random().nextInt(6) + 1;
-      while (containers.keys.contains(rand)) rand = Random().nextInt(6) + 1;
-      containers.putIfAbsent(rand, () => null);
-    }
-
-    _wasteBins = containers.keys
-        .map((e) =>
-            WasteBin.wasteBins.firstWhere((element) => element.wasteBinID == e))
-        .toList();
-    _wasteBins.shuffle();
-  }
+  // bool get isEndOfGame => (type == LevelType.BASIC || type == LevelType.MOVING
+  //         ? (_mistakesCounter >= maxMistakesAllowed ||
+  //             levelScore >= (numRounds - maxMistakesAllowed))
+  //         : levelScore >= numTargetWastes)
+  //     ? true
+  //     : false;
 }
