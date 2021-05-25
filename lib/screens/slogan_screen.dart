@@ -31,7 +31,7 @@ class _SloganScreenState extends State<SloganScreen> {
       });
     });
 
-    Timer(Duration(seconds: 4), () {
+    Timer(Duration(seconds: 3), () {
       setState(() {
         _width = 0;
         _height = 0;

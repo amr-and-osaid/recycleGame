@@ -77,7 +77,7 @@ class _BeltLevelWidgetState extends State<BeltLevelWidget> {
     widget.game.startLevel();
 
     globalTimer = Timer.periodic(Duration(seconds: 1), (timer) {
-      if (widget.game.remDuration <= 0) {
+      if (widget.game.levelEndReached) {
         globalTimer.cancel();
         widget.gameFinishAction();
       }

@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:recycle_game/app_data.dart';
 import 'package:recycle_game/logic/game_level.dart';
 import 'package:recycle_game/logic/game_area.dart';
@@ -31,8 +33,18 @@ class GameManager {
     _currentAreaID = 0;
   }
 
-  GameLevel getGameLevel(int areaID, int levelID) =>
-      gameAreas[areaID].levels[levelID];
+  GameLevel getGameLevel(int areaID, int levelID) {
+    GameArea gameArea =
+        gameAreas.firstWhere((ga) => ga.areaID == areaID, orElse: () => null);
+    if (gameArea == null) throw ("Couldn't find game area $areaID");
+
+    GameLevel gameLevel = gameArea.levels
+        .firstWhere((g) => g.levelID == levelID, orElse: () => null);
+    if (gameLevel == null)
+      throw ("Couldn't find game level $levelID in game area $areaID");
+
+    return gameLevel;
+  }
 
   bool get isLastLevelReached =>
       _currentAreaID == gameAreas.length - 1 &&
@@ -51,31 +63,55 @@ class GameManager {
   }
 
   List<GameArea> gameAreas = [
-    GameArea(1, [
-      GameLevel(LevelType.BASIC, 2, 1, 5, 60, null, -0.3, 0.79),
-      GameLevel(LevelType.BELT, 2, 1, 5, 60, 4000, 0.3, 0.5),
-      GameLevel(LevelType.BELT, 2, 2, 5, 60, 4000, 0.5, 0.25),
-      GameLevel(LevelType.BELT, 2, 3, 5, 60, 4000, -0.05, 0.15),
-      GameLevel(LevelType.BELT, 2, 4, 5, 60, 4000, 0.2, -0.0),
-      GameLevel(LevelType.BELT, 2, 5, 5, 60, 4000, -0.2, -0.17),
-      GameLevel(LevelType.WATERFALL, 2, 1, 5, 60, 4000, -0.38, -0.3),
-      GameLevel(LevelType.WATERFALL, 2, 2, 5, 60, 4000, -0.5, -0.57),
-      GameLevel(LevelType.WATERFALL, 2, 3, 5, 60, 4000, -0.3, -0.9),
-      GameLevel(LevelType.WATERFALL, 2, 4, 5, 60, 4000, 0.1, -0.93),
-      GameLevel(LevelType.WATERFALL, 2, 5, 5, 60, 4000, 0.9, -0.91)
+    GameArea(0, [
+      GameLevel(0, LevelType.BASIC, 2, 1, 5, 60, null),
+      GameLevel(1, LevelType.BASIC, 3, 1, 5, 60, 4000),
+      GameLevel(2, LevelType.BELT, 2, 1, 5, 60, 4000),
+      GameLevel(3, LevelType.BELT, 2, 2, 5, 60, 4000),
+      GameLevel(4, LevelType.BELT, 2, 3, 5, 60, 4000),
+      GameLevel(5, LevelType.WATERFALL, 2, 1, 5, 60, 4000),
+      GameLevel(6, LevelType.WATERFALL, 2, 2, 5, 60, 4000),
+      GameLevel(7, LevelType.WATERFALL, 2, 3, 5, 60, 4000),
+      GameLevel(8, LevelType.COLLECTION, 2, 24, 10, 60, 4000),
+      GameLevel(9, LevelType.COLLECTION, 2, 30, 15, 60, 4000),
+      GameLevel(10, LevelType.COLLECTION, 2, 30, 20, 60, 4000),
+    ], [
+      Point(0.41, 0.89),
+      Point(0.52, 0.75),
+      Point(0.62, 0.7),
+      Point(0.55, 0.57),
+      Point(0.48, 0.52),
+      Point(0.65, 0.46),
+      Point(0.4, 0.4),
+      Point(0.1, 0.4),
+      Point(0.4, 0.32),
+      Point(0.58, 0.16),
+      Point(0.5, 0.01),
     ]),
-    GameArea(2, [
-      GameLevel(LevelType.BASIC, 2, 1, 5, 60, null, -0.3, 0.79),
-      GameLevel(LevelType.BELT, 2, 1, 5, 60, 4000, 0.3, 0.5),
-      GameLevel(LevelType.BELT, 2, 2, 5, 60, 4000, 0.5, 0.25),
-      GameLevel(LevelType.BELT, 2, 3, 5, 60, 4000, -0.05, 0.15),
-      GameLevel(LevelType.BELT, 2, 4, 5, 60, 4000, 0.2, -0.0),
-      GameLevel(LevelType.BELT, 2, 5, 5, 60, 4000, -0.2, -0.17),
-      GameLevel(LevelType.WATERFALL, 2, 1, 5, 60, 4000, -0.38, -0.3),
-      GameLevel(LevelType.WATERFALL, 2, 2, 5, 60, 4000, -0.5, -0.57),
-      GameLevel(LevelType.WATERFALL, 2, 3, 5, 60, 4000, -0.3, -0.9),
-      GameLevel(LevelType.WATERFALL, 2, 4, 5, 60, 4000, 0.1, -0.93),
-      GameLevel(LevelType.WATERFALL, 2, 5, 5, 60, 4000, 0.9, -0.91)
+    GameArea(1, [
+      GameLevel(0, LevelType.BASIC, 2, 1, 5, 60, null),
+      GameLevel(1, LevelType.BASIC, 3, 1, 5, 60, 4000),
+      GameLevel(2, LevelType.BELT, 2, 1, 5, 60, 4000),
+      GameLevel(3, LevelType.BELT, 2, 2, 5, 60, 4000),
+      GameLevel(4, LevelType.BELT, 2, 3, 5, 60, 4000),
+      GameLevel(5, LevelType.WATERFALL, 2, 1, 5, 60, 4000),
+      GameLevel(6, LevelType.WATERFALL, 2, 2, 5, 60, 4000),
+      GameLevel(7, LevelType.WATERFALL, 2, 3, 5, 60, 4000),
+      GameLevel(8, LevelType.COLLECTION, 2, 24, 10, 60, 4000),
+      GameLevel(9, LevelType.COLLECTION, 2, 30, 15, 60, 4000),
+      GameLevel(10, LevelType.COLLECTION, 2, 30, 20, 60, 4000),
+    ], [
+      Point(0.41, 0.89),
+      Point(0.52, 0.75),
+      Point(0.62, 0.7),
+      Point(0.55, 0.57),
+      Point(0.48, 0.52),
+      Point(0.65, 0.46),
+      Point(0.4, 0.4),
+      Point(0.1, 0.4),
+      Point(0.4, 0.32),
+      Point(0.58, 0.16),
+      Point(0.5, 0.01),
     ]),
   ];
 }

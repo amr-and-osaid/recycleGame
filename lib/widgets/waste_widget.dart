@@ -8,14 +8,14 @@ const double WASTE_SIZE = 100;
 
 class WasteWidget extends StatefulWidget {
   final Waste waste;
-  final bool hide;
+  final bool hideWhenDraggedToTarget;
   final EntranceState state;
   final double offset;
 
   final _WasteWidgetState localState = _WasteWidgetState();
 
   WasteWidget(this.waste,
-      {this.hide = false,
+      {this.hideWhenDraggedToTarget = false,
       this.state = EntranceState.NONE,
       this.offset = 1,
       Key key})
@@ -85,7 +85,9 @@ class _WasteWidgetState extends State<WasteWidget> {
           data: widget.waste,
           childWhenDragging: emptyWidget,
           feedback: feedbackWidget,
-          child: widget.hide ? emptyWidget : baseWidget,
+          child: widget.hideWhenDraggedToTarget && draggedToTarget
+              ? emptyWidget
+              : baseWidget,
           onDragStarted: () => AppData.audioManager.playDrag(),
           onDragCompleted: () => setState(() => draggedToTarget = true),
         )

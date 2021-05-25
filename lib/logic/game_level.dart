@@ -7,19 +7,19 @@ enum LevelType { BASIC, BELT, WATERFALL, RAIN, COLLECTION }
 
 class GameLevel {
   //Level Params
+  int levelID;
   LevelType type;
   int numBins;
   int numWastes;
   int numTargetWastes;
   int levelDuration;
   int movingDuration;
-  double xLocInMap;
-  double yLocInMap;
   String bgPath;
 
   //Level State
   int levelScore;
   bool levelSucceeded;
+  bool levelEndReached;
   int remDuration;
   List<WasteBin> bins = [];
   int consecutiveMistakesCounter = 0;
@@ -29,15 +29,16 @@ class GameLevel {
   Timer _levelTimer;
   bool _lastCorrectState;
 
-  GameLevel(this.type, this.numBins, this.numWastes, this.numTargetWastes,
-      this.levelDuration, this.movingDuration, this.xLocInMap, this.yLocInMap) {
+  GameLevel(this.levelID, this.type, this.numBins, this.numWastes,
+      this.numTargetWastes, this.levelDuration, this.movingDuration) {
     prepareLevel();
-    bgPath = 'assets/areas/11.png';
+    bgPath = 'assets/levels/0.png';
   }
 
   void prepareLevel() {
     levelScore = 0;
     levelSucceeded = false;
+    levelEndReached = false;
     remDuration = levelDuration;
     consecutiveCorrectsCounter = 0;
     consecutiveMistakesCounter = 0;
@@ -57,7 +58,7 @@ class GameLevel {
     _levelTimer = Timer.periodic(Duration(seconds: 1), (timer) {
       remDuration--;
       if (remDuration <= 0) {
-        levelSucceeded = levelScore >= numTargetWastes;
+        levelEndReached = true;
         _levelTimer.cancel();
       }
     });
@@ -70,6 +71,9 @@ class GameLevel {
       remDuration -= 5;
       if (remDuration < 0) remDuration = 0;
     }
+
+    if (levelScore >= numTargetWastes) levelSucceeded = true;
+    if (levelScore >= numTargetWastes) levelEndReached = true;
 
     if (_lastCorrectState != null) {
       if (_lastCorrectState && !isCorrect) consecutiveCorrectsCounter = 0;
@@ -94,59 +98,4 @@ class GameLevel {
     if (randomWastes.length <= 0) return null;
     return randomWastes[Random().nextInt(randomWastes.length)];
   }
-
-  // Game State
-
-  // String get scoreImage {
-  //   return "assets/progress/LS" +
-  //       ((_scoreCounter.toDouble() /
-  //                   (type == LevelType.BASIC || type == LevelType.MOVING
-  //                       ? (numRounds - maxMistakesAllowed)
-  //                       : numTargetWastes)) *
-  //               33)
-  //           .floor()
-  //           .clamp(0, 33)
-  //           .toString() +
-  //       ".png";
-  // }
-
-  // double get maxMiskatesAllowedAlignValue {
-  //   return ((1 - (maxMistakesAllowed / numRounds)) * 2) - 1;
-  // }
-
-  // String timerImage(int curSec) {
-  //   return "assets/timer/" +
-  //       (((curSec.toDouble() / levelDuration) * 23).floor()).toString() +
-  //       ".png";
-  // }
-
-  // String get mistakesImage {
-  //   return "assets/progress/LS" +
-  //       (((_mistakesCounter).toDouble() / maxMistakesAllowed) * 33)
-  //           .floor()
-  //           .toString() +
-  //       ".png";
-  // }
-
-  // bool get winLevelReached {
-  //   return levelScore >=
-  //       (type == LevelType.BASIC || type == LevelType.MOVING
-  //           ? (numRounds - maxMistakesAllowed)
-  //           : numTargetWastes);
-  // }
-
-  // bool get isWin {
-  //   return (type == LevelType.BASIC || type == LevelType.MOVING
-  //           ? (_mistakesCounter >= maxMistakesAllowed)
-  //           : levelScore < numTargetWastes)
-  //       ? false
-  //       : true;
-  // }
-
-  // bool get isEndOfGame => (type == LevelType.BASIC || type == LevelType.MOVING
-  //         ? (_mistakesCounter >= maxMistakesAllowed ||
-  //             levelScore >= (numRounds - maxMistakesAllowed))
-  //         : levelScore >= numTargetWastes)
-  //     ? true
-  //     : false;
 }

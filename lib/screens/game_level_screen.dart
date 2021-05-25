@@ -4,6 +4,7 @@ import 'package:recycle_game/logic/game_level.dart';
 import 'package:recycle_game/widgets/levels_widgets/belt_level_widget.dart';
 import 'package:recycle_game/widgets/levels_widgets/basic_level_widget.dart';
 import 'package:recycle_game/widgets/levels_widgets/waterfall_level_widget.dart';
+import 'package:recycle_game/widgets/levels_widgets/collection_level_widget.dart';
 import 'package:recycle_game/screens/game_areas_screen.dart';
 import 'package:recycle_game/screens/welcome_screen.dart';
 import 'package:flutter/material.dart';
@@ -44,6 +45,9 @@ class _GameLevelScreenState extends State<GameLevelScreen>
         break;
       case LevelType.WATERFALL:
         gamelevelWidget = WaterfallLevelWidget(gameLevel, gameFinishAction);
+        break;
+      case LevelType.COLLECTION:
+        gamelevelWidget = CollectionLevelWidget(gameLevel, gameFinishAction);
         break;
       default:
         throw Exception("Game type ${gameLevel.type} is not supported");
